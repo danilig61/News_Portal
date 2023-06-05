@@ -1,0 +1,61 @@
+python manage.py shell
+Python 3.10.9 (tags/v3.10.9:1dd9be6, Dec  6 2022, 20:01:21) [MSC v.1934 64 bit (AMD64)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+(InteractiveConsole)
+>>> from django.contrib.auth.models import User
+>>> User.objects.all().delete()
+(2, {'auth.User': 2})
+>>> User.objects.all().delete()
+(0, {})
+>>> from django.contrib.auth.models import User
+>>>
+>>> user1 = User.objects.create_user('user1')
+>>> user2 = User.objects.create_user('user2')
+>>> from myapp.models import Author
+>>>
+>>> author1 = Author.objects.create(user=user1)
+>>> author2 = Author.objects.create(user=user2)
+>>> from myapp.models import Category
+>>>
+>>> category1 = Category.objects.create(name='Sport')
+>>> category2 = Category.objects.create(name='Politics')
+>>> category3 = Category.objects.create(name='Education')
+>>> category4 = Category.objects.create(name='Economy')
+>>> from myapp.models import Post, PostCategory
+>>>
+>>> post1 = Post.objects.create(author=author1, post_type=Post.ARTICLE, title='Article 1', text='Article 1 text', rating=0)
+>>> post2 = Post.objects.create(author=author2, post_type=Post.ARTICLE, title='Article 2', text='Article 2 text', rating=0)
+>>> news1 = Post.objects.create(author=author1, post_type=Post.NEWS, title='News 1', text='News 1 text', rating=0)
+>>>
+>>> PostCategory.objects.create(post=post1, category=category1)
+<PostCategory: PostCategory object (1)>
+>>> PostCategory.objects.create(post=post1, category=category2)
+<PostCategory: PostCategory object (2)>
+>>> PostCategory.objects.create(post=post2, category=category3)
+<PostCategory: PostCategory object (3)>
+>>> PostCategory.objects.create(post=news1, category=category4)
+<PostCategory: PostCategory object (4)>
+>>> from myapp.models import Comment
+>>>
+>>> comment1 = Comment.objects.create(post=post1, user=user1, text='Comment 1', rating=0)
+>>> comment2 = Comment.objects.create(post=post1, user=user2, text='Comment 2', rating=0)
+>>> comment3 = Comment.objects.create(post=post2, user=user1, text='Comment 3', rating=0)
+>>> comment4 = Comment.objects.create(post=news1, user=user2, text='Comment 4', rating=0)
+>>> post1.like()
+>>> post2.dislike()
+>>> news1.like()
+>>> comment1.like()
+>>> comment2.like()
+>>> comment3.dislike()
+>>> comment4.like()
+>>> author1.update_rating()
+>>> author2.update_rating()
+>>> best_author = Author.objects.all().order_by('-rating').values('user__username', 'rating')[0]
+>>> print(best_author)
+{'user__username': 'user1', 'rating': 2}
+>>> best_post = Post.objects.filter(post_type=Post.ARTICLE).order_by('-rating').first()
+>>> print(best_post.created_at, best_post.author.user.username, best_post.rating, best_post.title, best_post.preview())
+2023-06-05 13:39:51.483475+00:00 user1 1 Article 1 Article 1 text
+>>> comments = Comment.objects.filter(post=best_post)
+>>> for comment in comments:
+...     print(comment.created_at, comment.user.username, comment.rating, comment.text)
